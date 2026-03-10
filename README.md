@@ -1,3 +1,20 @@
+## 🚀 Getting Started
+
+1. Download the latest release from [Releases](https://github.com/pedapallisuresh/Data_mind-AI-Full-stack-data-analysis-/releases)
+2. Extract the ZIP file
+3. Follow the setup instructions in the README inside the project
+
+## 📦 Download
+
+The latest version of Data_Mind_AI is available in the [Releases](https://github.com/pedapallisuresh/Data_mind-AI-Full-stack-data-analysis-/releases) section.
+
+**Current Release:** [Data_mind_ai v1.0](https://github.com/pedapallisuresh/Data_mind-AI-Full-stack-data-analysis-/releases/tag/data_mind_ai)
+
+### Quick Download
+- [Download Data_Mind_AI_project.zip](https://github.com/pedapallisuresh/Data_mind-AI-Full-stack-data-analysis-/releases/download/data_mind_ai/Data_Mind_AI_project.zip)
+
+[![Latest Release](https://img.shields.io/github/v/release/pedapallisuresh/Data_mind-AI-Full-stack-data-analysis-)](https://github.com/pedapallisuresh/Data_mind-AI-Full-stack-data-analysis-/releases/latest)
+
 # Data_mind-AI-Full-stack-data-analysis-
 
 A modern, full-stack data analysis application with AI-powered insights, natural language SQL query generation, and interactive visualizations. Built with React + Vite for the frontend and Flask for the backend.
