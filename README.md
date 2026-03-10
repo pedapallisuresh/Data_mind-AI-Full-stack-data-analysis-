@@ -86,7 +86,7 @@ A modern, full-stack data analysis application with AI-powered insights, natural
 ## 📂 Project Structure
 
 ```
-ai_data_project/
+data_mind_project/
 ├── api.py                    # Flask backend API
 ├── analyzer.py               # Data analysis modules
 ├── cleaner.py                # Data cleaning functions
@@ -124,7 +124,7 @@ ai_data_project/
 
 #### 1. Clone and Navigate
 ```bash
-cd c:\Users\pedapalli.s.lv\ai_data_project
+cd c:\Users\pedapalli.s.lv\data_mind_project
 ```
 
 #### 2. Install Backend Dependencies
