@@ -1,0 +1,7 @@
+flask
+flask-cors
+pandas
+duckdb
+python-dotenv
+requests
+openai

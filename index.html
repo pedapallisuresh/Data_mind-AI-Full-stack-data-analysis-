@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Data Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-light: #818cf8;
+      --secondary: #10b981;
+      --background: #0f172a;
+      --surface: #1e293b;
+      --surface-light: #334155;
+      --surface-hover: #3b4a63;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --error: #ef4444;
+      --success: #22c55e;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      color: var(--primary);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .logo h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .data-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    .notification {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius);
+      font-weight: 500;
+      z-index: 1000;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .notification.show {
+      display: flex;
+    }
+
+    .notification.success {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.1) 100%);
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+
+    .notification.error {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.1) 100%);
+      border: 1px solid var(--error);
+      color: var(--error);
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.25rem;
+      padding: 0.5rem 2rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab:hover:not(:disabled) {
+      background: var(--surface-light);
+      color: var(--text);
+    }
+
+    .tab.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .tab:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .upload-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 60vh;
+    }
+
+    .upload-card {
+      text-align: center;
+      padding: 4rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 2px dashed var(--border);
+      max-width: 500px;
+      width: 100%;
+      transition: all 0.3s ease;
+    }
+
+    .upload-card:hover {
+      border-color: var(--primary);
+      background: var(--surface-light);
+    }
+
+    .upload-icon {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border-radius: 50%;
+      color: white;
+    }
+
+    .upload-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .upload-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .upload-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.875rem 2rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .upload-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+    }
+
+    .section {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .section-header h2 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.25rem;
+    }
+
+    .badge {
+      padding: 0.25rem 0.75rem;
+      background: var(--primary);
+      color: white;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    .data-table th {
+      background: var(--surface-light);
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .data-table tbody tr:hover {
+      background: var(--surface-hover);
+    }
+
+    .action-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      border: 1px solid var(--border);
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .action-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface-light);
+      border-radius: 50%;
+      color: var(--primary);
+    }
+
+    .action-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .action-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .primary-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.875rem 2rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+    }
+
+    .primary-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+    }
+
+    .primary-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading .spinner {
+      display: inline-block;
+    }
+
+    .loading .btn-text {
+      display: none;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .analysis-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .analysis-card:hover {
+      background: var(--surface-light);
+      border-color: var(--primary);
+      transform: translateY(-4px);
+    }
+
+    .analysis-card svg {
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+    }
+
+    .analysis-card h4 {
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .analysis-card p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .result-card h3 {
+      font-size: 1.125rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .result-card pre {
+      background: var(--background);
+      padding: 1rem;
+      border-radius: var(--radius-sm);
+      overflow-x: auto;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    .result-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .result-section h4 {
+      font-size: 1rem;
+      color: var(--primary-light);
+      margin-bottom: 0.75rem;
+    }
+
+    .query-input-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .query-input-card h3 {
+      margin-bottom: 1rem;
+      font-size: 1.125rem;
+    }
+
+    .query-input-wrapper {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .query-input-wrapper input {
+      flex: 1;
+      padding: 0.875rem 1rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .query-input-wrapper input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .query-input-wrapper input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .sql-code {
+      background: var(--background);
+      padding: 1rem;
+      border-radius: var(--radius-sm);
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 0.875rem;
+      color: var(--secondary);
+      overflow-x: auto;
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      
+      .tabs {
+        padding: 0.5rem 1rem;
+      }
+      
+      .main-content {
+        padding: 1rem;
+      }
+      
+      .query-input-wrapper {
+        flex-direction: column;
+      }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="logo">
+        <svg class="logo-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+          <line x1="12" y1="22.08" x2="12" y2="12"></line>
+        </svg>
+        <h1>AI Data Assistant</h1>
+      </div>
+      <div class="data-info hidden" id="dataInfo">
+        <span id="rowCount">0 rows</span>
+        <span>•</span>
+        <span id="colCount">0 columns</span>
+      </div>
+    </header>
+
+    <div class="notification" id="notification">
+      <span id="notificationText"></span>
+    </div>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="upload">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        Upload
+      </button>
+      <button class="tab" data-tab="preview" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+        Data Preview
+      </button>
+      <button class="tab" data-tab="cleaning" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        Data Cleaning
+      </button>
+      <button class="tab" data-tab="analysis" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        Analysis
+      </button>
+      <button class="tab" data-tab="ai-insights" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><path d="M12 2a10 10 0 0 1 10 10h-10V2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        AI Insights
+      </button>
+      <button class="tab" data-tab="query" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        Query
+      </button>
+    </nav>
+
+    <main class="main-content">
+      <!-- Upload Section -->
+      <div class="section active" id="upload-section">
+        <div class="upload-section">
+          <div class="upload-card">
+            <div class="upload-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            </div>
+            <h2>Upload Your CSV File</h2>
+            <p>Get started by uploading a CSV file to analyze</p>
+            <label class="upload-button">
+              <input type="file" id="fileInput" accept=".csv" style="display: none;">
+              <span class="btn-text">Choose File</span>
+              <span class="spinner"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview Section -->
+      <div class="section" id="preview-section">
+        <div class="section-header">
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            Data Preview
+          </h2>
+          <span class="badge" id="shapeBadge">0 × 0</span>
+        </div>
+        <div class="table-container">
+          <table class="data-table" id="previewTable">
+            <thead id="previewHead"></thead>
+            <tbody id="previewBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Cleaning Section -->
+      <div class="section" id="cleaning-section">
+        <div class="action-card">
+          <div class="action-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </div>
+          <h3>Data Cleaning</h3>
+          <p>Remove duplicates, handle missing values, and clean outliers</p>
+          <button class="primary-button" id="cleanBtn">
+            <span class="btn-text">Clean Data</span>
+            <span class="spinner"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Analysis Section -->
+      <div class="section" id="analysis-section">
+        <div class="analysis-grid">
+          <div class="analysis-card" data-action="summary">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            <h4>Summary</h4>
+            <p>Basic data overview</p>
+          </div>
+          <div class="analysis-card" data-action="comprehensive">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+            <h4>Comprehensive</h4>
+            <p>Full analysis</p>
+          </div>
+          <div class="analysis-card" data-action="profiling">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+            <h4>Profiling</h4>
+            <p>Data quality</p>
+          </div>
+          <div class="analysis-card" data-action="visualizations">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <h4>Visualizations</h4>
+            <p>Chart suggestions</p>
+          </div>
+          <div class="analysis-card" data-action="statistics">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            <h4>Statistics</h4>
+            <p>Statistical tests</p>
+          </div>
+          <div class="analysis-card" data-action="agent">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <h4>Agent Analysis</h4>
+            <p>Complete analysis</p>
+          </div>
+        </div>
+        <div id="analysisResults"></div>
+      </div>
+
+      <!-- AI Insights Section -->
+      <div class="section" id="ai-insights-section">
+        <div class="action-card">
+          <div class="action-icon" style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </div>
+          <h3>AI-Powered Insights</h3>
+          <p>Generate intelligent insights using Large Language Models</p>
+          <button class="primary-button" id="aiInsightsBtn">
+            <span class="btn-text">Generate AI Insights</span>
+            <span class="spinner"></span>
+          </button>
+        </div>
+        <div id="aiResults"></div>
+      </div>
+
+      <!-- Query Section -->
+      <div class="section" id="query-section">
+        <div class="query-input-card">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Ask Questions About Your Data
+          </h3>
+          <div class="query-input-wrapper">
+            <input type="text" id="queryInput" placeholder="e.g., What is the average sales by region?">
+            <button class="primary-button" id="queryBtn">
+              <span class="btn-text">Run Query</span>
+              <span class="spinner"></span>
+            </button>
+          </div>
+        </div>
+        <div id="queryResults"></div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:5000';
+    let currentData = null;
+    let columns = [];
+    let shape = [0, 0];
+
+    // Tab navigation
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabId = tab.dataset.tab;
+        if (tab.disabled) return;
+        
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        
+        tab.classList.add('active');
+        document.getElementById(`${tabId}-section`).classList.add('active');
+      });
+    });
+
+    function showNotification(message, isError = false) {
+      const notification = document.getElementById('notification');
+      const text = document.getElementById('notificationText');
+      text.textContent = message;
+      notification.className = `notification ${isError ? 'error' : 'success'} show`;
+      setTimeout(() => notification.classList.remove('show'), 5000);
+    }
+
+    function setLoading(btn, loading) {
+      if (loading) {
+        btn.classList.add('loading');
+        btn.disabled = true;
+      } else {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+
+    function enableTabs() {
+      document.querySelectorAll('.tab').forEach(tab => {
+        if (tab.dataset.tab !== 'upload') {
+          tab.disabled = false;
+        }
+      });
+      document.getElementById('dataInfo').classList.remove('hidden');
+    }
+
+    // File upload
+    document.getElementById('fileInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const btn = document.querySelector('.upload-button');
+      setLoading(btn, true);
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await fetch(`${API_BASE}/upload`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+
+        if (data.error) throw new Error(data.error);
+
+        currentData = data.preview;
+        columns = data.columns;
+        shape = data.shape;
+
+        document.getElementById('rowCount').textContent = `${shape[0]} rows`;
+        document.getElementById('colCount').textContent = `${shape[1]} columns`;
+        document.getElementById('shapeBadge').textContent = `${shape[0]} × ${shape[1]}`;
+
+        // Render table
+        const thead = document.getElementById('previewHead');
+        const tbody = document.getElementById('previewBody');
+        thead.innerHTML = `<tr>${columns.map(col => `<th>${col}</th>`).join('')}</tr>`;
+        tbody.innerHTML = currentData.slice(0, 50).map(row => 
+          `<tr>${columns.map(col => `<td>${row[col]}</td>`).join('')}</tr>`
+        ).join('');
+
+        enableTabs();
+        showNotification('File uploaded successfully!');
+        
+        // Switch to preview tab
+        document.querySelector('[data-tab="preview"]').click();
+      } catch (err) {
+        showNotification(err.message, true);
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+
+    // Data cleaning
+    document.getElementById('cleanBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('cleanBtn');
+      setLoading(btn, true);
+
+      try {
+        const response = await fetch(`${API_BASE}/clean`, { method: 'POST' });
+        const data = await response.json();
+
+        if (data.error) throw new Error(data.error);
+
+        currentData = data.preview;
+        shape = data.shape;
+
+        document.getElementById('rowCount').textContent = `${shape[0]} rows`;
+        document.getElementById('colCount').textContent = `${shape[1]} columns`;
+        document.getElementById('shapeBadge').textContent = `${shape[0]} × ${shape[1]}`;
+
+        // Update table
+        const thead = document.getElementById('previewHead');
+        const tbody = document.getElementById('previewBody');
+        thead.innerHTML = `<tr>${columns.map(col => `<th>${col}</th>`).join('')}</tr>`;
+        tbody.innerHTML = currentData.slice(0, 50).map(row => 
+          `<tr>${columns.map(col => `<td>${row[col]}</td>`).join('')}</tr>`
+        ).join('');
+
+        showNotification('Data cleaned successfully!');
+      } catch (err) {
+        showNotification(err.message, true);
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+
+    // Analysis actions
+    document.querySelectorAll('.analysis-card').forEach(card => {
+      card.addEventListener('click', async () => {
+        const action = card.dataset.action;
+        const resultsDiv = document.getElementById('analysisResults');
+        
+        setLoading(card, true);
+
+        try {
+          let endpoint = '';
+          switch(action) {
+            case 'summary': endpoint = '/summary'; break;
+            case 'comprehensive': endpoint = '/comprehensive-analysis'; break;
+            case 'profiling': endpoint = '/data-profiling'; break;
+            case 'visualizations': endpoint = '/visualization-suggestions'; break;
+            case 'statistics': endpoint = '/statistical-summary'; break;
+            case 'agent': endpoint = '/comprehensive-agent-analysis'; break;
+          }
+
+          const response = await fetch(`${API_BASE}${endpoint}`);
+          const data = await response.json();
+
+          if (data.error) throw new Error(data.error);
+
+          let html = '';
+          if (action === 'summary') {
+            html = `<div class="result-card"><h3>📊 Data Summary</h3><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+          } else if (action === 'comprehensive') {
+            html = `<div class="result-card"><h3>📈 Comprehensive Analysis</h3><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+          } else if (action === 'profiling') {
+            html = `<div class="result-card"><h3>📋 Data Profiling</h3><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+          } else if (action === 'visualizations') {
+            html = `<div class="result-card"><h3>📊 Visualization Suggestions</h3><ul>${data.suggestions.map(s => `<li>${s}</li>`).join('')}</ul></div>`;
+          } else if (action === 'statistics') {
+            html = `<div class="result-card"><h3>📈 Statistical Summary</h3><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+          } else if (action === 'agent') {
+            html = `<div class="result-card"><h3>🤖 Comprehensive Agent Analysis</h3><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+          }
+
+          resultsDiv.innerHTML = html;
+          showNotification('Analysis complete!');
+        } catch (err) {
+          showNotification(err.message, true);
+        } finally {
+          setLoading(card, false);
+        }
+      });
+    });
+
+    // AI Insights
+    document.getElementById('aiInsightsBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('aiInsightsBtn');
+      setLoading(btn, true);
+
+      try {
+        const response = await fetch(`${API_BASE}/ai-insights`);
+        const data = await response.json();
+
+        if (data.error) throw new Error(data.error);
+
+        const resultsDiv = document.getElementById('aiResults');
+        resultsDiv.innerHTML = `<div class="result-card"><h3>🤖 AI Insights</h3><pre>${data.insights}</pre></div>`;
+        showNotification('AI insights generated!');
+      } catch (err) {
+        showNotification(err.message, true);
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+
+    // Query
+    document.getElementById('queryBtn').addEventListener('click', async () => {
+      const question = document.getElementById('queryInput').value;
+      if (!question) return;
+
+      const btn = document.getElementById('queryBtn');
+      setLoading(btn, true);
+
+      try {
+        const response = await fetch(`${API_BASE}/query`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question })
+        });
+        const data = await response.json();
+
+        const resultsDiv = document.getElementById('queryResults');
+        
+        if (data.error) {
+          resultsDiv.innerHTML = `<div class="result-card"><h3>Error</h3><pre>${data.error}</pre></div>`;
+        } else {
+          let html = `<div class="result-card"><h3>🧠 Generated SQL</h3><pre class="sql-code">${data.sql}</pre></div>`;
+          
+          if (data.result && data.result.length > 0) {
+            const resultCols = Object.keys(data.result[0]);
+            html += `<div class="result-card"><h3>📌 Query Result</h3><div class="table-container"><table class="data-table"><thead><tr>${resultCols.map(c => `<th>${c}</th>`).join('')}</tr></thead><tbody>${data.result.map(row => `<tr>${resultCols.map(c => `<td>${row[c]}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
+          }
+          
+          resultsDiv.innerHTML = html;
+        }
+        showNotification('Query executed!');
+      } catch (err) {
+        showNotification(err.message, true);
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+
+    // Enter key for query
+    document.getElementById('queryInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('queryBtn').click();
+      }
+    });
+  </script>
+</body>
+</html>
+
